@@ -1,12 +1,17 @@
 package com.mth.webquiz.entity;
 
 
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Size;
+import javax.persistence.OneToMany;
+
+import com.mth.webquiz.dto.UserDTO;
 
 @Entity(name = "user")
 public class UserEntity {
@@ -15,17 +20,23 @@ public class UserEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
 	
-	// TODO: Email deve possuir um @ e um . para ser considerado valido
-	@NotBlank
 	private String email;
 	
-	@Size(min = 5, max = 100)
 	private String password;
 	
-	// TODO: Integração com Tabela de quiz
+	// Integração com tabela de quiz
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+	private List<QuizEntity> quizzes = new ArrayList<>();
 	
 	public UserEntity() {
 		// Vazio
+	}
+	
+	public UserEntity(UserDTO userDTO) {
+		// Só irá acessar quando um novo user for criado
+		id = 0;
+		email = userDTO.getEmail();
+		password = userDTO.getPassword();
 	}
 	
 	public int getId() {
@@ -50,6 +61,14 @@ public class UserEntity {
 
 	public void setPassword(String password) {
 		this.password = password;
+	}
+	
+	public List<QuizEntity> getQuizzes() {
+		return quizzes;
+	}
+
+	public void setQuizzes(List<QuizEntity> quizzes) {
+		this.quizzes = quizzes;
 	}
 
 	@Override

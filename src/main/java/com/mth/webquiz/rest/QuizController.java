@@ -9,6 +9,7 @@ import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,28 +24,40 @@ import org.springframework.web.server.ResponseStatusException;
 import com.mth.webquiz.dto.AnswersDTO;
 import com.mth.webquiz.dto.QuizDTO;
 import com.mth.webquiz.entity.QuizEntity;
+import com.mth.webquiz.entity.UserEntity;
 import com.mth.webquiz.service.QuizService;
+import com.mth.webquiz.service.UserService;
 
 @RestController
 @RequestMapping("/api")
 public class QuizController {
 	
+	private static final String NOT_FOUND_MESSAGE = "Quiz não encontrado";
+	
 	@Autowired
 	QuizService quizService;
 	
+	@Autowired
+	UserService userService;
+	
 	// Map para GET {id} - Retorna o quiz pedido
 	@GetMapping("/quizzes/{id}")
-	public QuizDTO getQuiz(@PathVariable int id) {
-		QuizEntity entity = quizService.findById(id)
-						.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Quiz não encontrado"));
+	public QuizDTO getQuiz(@PathVariable int id, Authentication auth) {
+//		List<QuizEntity> quizzes = quizService.findByUser(getCurrentUser(auth));
+//		QuizEntity entity = quizzes.stream()
+//							.filter(quiz -> quiz.getId() == id)
+//							.findFirst()
+//							.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, NOT_FOUND_MESSAGE));
 		
+		QuizEntity entity = quizService.findByIdAndUser(id, getCurrentUser(auth))
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, NOT_FOUND_MESSAGE));
 		return new QuizDTO(entity);
 	}
 	
 	// Map para GET /quizzes - Retorna todos os quiz com ID
 	@GetMapping("/quizzes")
-	public List<QuizDTO> getQuizzes() {
-		List<QuizEntity> quizEntities = quizService.findAll();
+	public List<QuizDTO> getQuizzes(Authentication auth) {
+		List<QuizEntity> quizEntities = quizService.findByUser(getCurrentUser(auth));
 		
 		return quizEntities.stream()
 							.map(QuizDTO::new)
@@ -53,15 +66,15 @@ public class QuizController {
 	
 	// Map para POST /quizzes - Cria um novo quiz
 	@PostMapping("/quizzes")
-	public QuizDTO createQuiz(@Valid @RequestBody QuizDTO theQuiz, Errors errors) {
+	public QuizDTO createQuiz(@Valid @RequestBody QuizDTO theQuiz, Errors errors, Authentication auth) {
 		// Unico metodo de pegar o exception do Validate. ExceptionHandler não funciona
 		if(errors.hasErrors()) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, invalidFieldErrorMessage(errors));
 		}
-		
 		QuizEntity quizEntity = new QuizEntity(theQuiz);
 		
 		quizEntity.setId(0);
+		quizEntity.setUser(getCurrentUser(auth));
 		quizService.save(quizEntity);
 		
 		return new QuizDTO(quizEntity);
@@ -71,7 +84,7 @@ public class QuizController {
 	@PostMapping("/quizzes/{quizId}/solve")
 	public AnswerFeedback checkAnswer(@RequestBody AnswersDTO answer, @PathVariable int quizId) {
 		QuizEntity quiz = quizService.findById(quizId)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Quiz não encontrado"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, NOT_FOUND_MESSAGE));
 		
 		QuizDTO quizDTO = new QuizDTO(quiz);
 		if (equalAnswers(quizDTO, answer)) {
@@ -85,12 +98,15 @@ public class QuizController {
 	@DeleteMapping("/quizzes/{quizId}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)		// Retorna um 204 após deletar
 	public void deleteQuiz(@PathVariable int quizId) {
-		// TODO: Checar se o usuário pegou um ID válido
 		try {
 			quizService.deleteById(quizId);
 		} catch (EmptyResultDataAccessException exc) {
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Quiz não encontrado");
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, NOT_FOUND_MESSAGE);
 		}
+	}
+	
+	private UserEntity getCurrentUser(Authentication auth) {
+		return userService.findByEmail(auth.getName());
 	}
 	
 	private String invalidFieldErrorMessage(Errors errors) {
@@ -120,5 +136,6 @@ public class QuizController {
 		
 		return false;
 	}
+	
 	
 }

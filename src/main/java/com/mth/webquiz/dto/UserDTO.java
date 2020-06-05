@@ -6,10 +6,10 @@ import java.util.List;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
+import com.mth.webquiz.entity.UserEntity;
+
 public class UserDTO {
-	
-	private int id;
-	
+		
 	// TODO: Email deve possuir um @ e um . para ser considerado valido
 	@NotBlank
 	private String email;
@@ -17,21 +17,19 @@ public class UserDTO {
 	@Size(min = 5, max = 100)
 	private String password;
 	
-	// TODO: Integração com Tabela de quiz
 	private List<Integer> quizIds = new ArrayList<>();
 	
-	public  UserDTO() {
+	public UserDTO() {
 		// Vazio
 	}
 	
-	public int getId() {
-		return id;
+	public  UserDTO(UserEntity userEntity) {
+		email = userEntity.getEmail();
+		password = userEntity.getPassword();
+		userEntity.getQuizzes()
+					.forEach(quiz -> quizIds.add(quiz.getId()));
 	}
-
-	public void setId(int id) {
-		this.id = id;
-	}
-
+	
 	public String getEmail() {
 		return email;
 	}
@@ -47,9 +45,17 @@ public class UserDTO {
 	public void setPassword(String password) {
 		this.password = password;
 	}
+	
+	public List<Integer> getQuizIds() {
+		return quizIds;
+	}
+
+	public void setQuizIds(List<Integer> quizIds) {
+		this.quizIds = quizIds;
+	}
 
 	@Override
 	public String toString() {
-		return "UserEntity [id=" + id + ", email=" + email + ", password=" + password + "]";
+		return "UserEntity [email=" + email + ", password=" + password + "]";
 	}
 }

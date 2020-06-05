@@ -39,9 +39,9 @@ public class QuizEntity {
 	@OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL)
 	private List<QuizAnswers> answer = new ArrayList<>();
 	
-//	@ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.PERSIST})
-//	@JoinColumn(name = "user_id")
-//	private UserEntity user;
+	@ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.PERSIST})
+	@JoinColumn(name = "user_id")
+	private UserEntity user;
 	
 	public QuizEntity() {
 		// Vazio para DB
@@ -103,13 +103,13 @@ public class QuizEntity {
 		this.answer = answer;
 	}
 	
-//	public UserEntity getUser() {
-//		return user;
-//	}
-//
-//	public void setUser(UserEntity user) {
-//		this.user = user;
-//	}
+	public UserEntity getUser() {
+		return user;
+	}
+
+	public void setUser(UserEntity user) {
+		this.user = user;
+	}
 
 	@Override
 	public String toString() {
