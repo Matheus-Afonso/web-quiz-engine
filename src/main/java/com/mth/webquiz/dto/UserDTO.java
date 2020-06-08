@@ -3,15 +3,14 @@ package com.mth.webquiz.dto;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
 import com.mth.webquiz.entity.UserEntity;
+import com.mth.webquiz.validator.EmailConstraint;
 
 public class UserDTO {
 		
-	// TODO: Email deve possuir um @ e um . para ser considerado valido
-	@NotBlank
+	@EmailConstraint
 	private String email;
 	
 	@Size(min = 5, max = 100)

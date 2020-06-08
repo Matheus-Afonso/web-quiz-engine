@@ -3,10 +3,13 @@ package com.mth.webquiz.rest;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.mth.webquiz.dto.UserDTO;
 import com.mth.webquiz.entity.UserEntity;
@@ -20,8 +23,22 @@ public class UserController {
 	private UserService userService;
 		
 	@PostMapping("/register")
-	public UserEntity registerUser(@Valid @RequestBody UserDTO user) {
+	public UserEntity registerUser(@Valid @RequestBody UserDTO user, Errors errors) {
+		
+		if (errors.hasErrors()) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, invalidFieldErrorMessage(errors));
+		}
+		
 		UserEntity entity = new UserEntity(user);
 		return userService.registerUser(entity);
+	}
+	
+	private String invalidFieldErrorMessage(Errors errors) {
+		StringBuilder msg = new StringBuilder();
+		msg.append(errors.getFieldError().getField())
+			.append(": ")
+			.append(errors.getFieldError().getDefaultMessage());
+		
+		return msg.toString();
 	}
 }

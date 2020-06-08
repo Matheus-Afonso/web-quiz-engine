@@ -11,8 +11,6 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.mth.webquiz.dto.QuizDTO;
@@ -25,13 +23,10 @@ public class QuizEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;	
 	
-	@NotBlank
 	private String title;
 	
-	@NotBlank
 	private String text;
 	
-	@Size(min = 2, max = 20)
 	// Se deletar a pergunta, tudo relacionado a ela é deletado
 	@OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL)
 	private List<QuizOptions> options = new ArrayList<>();
