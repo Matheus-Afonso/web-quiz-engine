@@ -22,12 +22,9 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 	
 	@Override
 	public UserDetails loadUserByUsername(String email) {
-		UserEntity user = userRepository.findByEmail(email);
-		log.info(">>>Email passado: {}", email);
+		UserEntity user = userRepository.findByEmail(email)
+				.orElseThrow(() -> new UsernameNotFoundException("Email nao encontrado"));
 		log.info(">>>User achado: {}", user);
-		if(user == null) {
-			throw new UsernameNotFoundException("Email nao encontrado");
-		}
 		
 		return toUserDetails(user);
 	}

@@ -19,5 +19,5 @@ public interface QuizService {
 
 	Optional<QuizEntity> findByIdAndUser(int id, UserEntity user);
 
-	void deleteByIdAndUser(int quizId, UserEntity userEntity);
+	boolean deleteByIdAndUser(int quizId, UserEntity userEntity);
 }

@@ -48,13 +48,15 @@ public class QuizServiceImpl implements QuizService {
 	}
 
 	@Override
-	public void deleteByIdAndUser(int quizId, UserEntity userEntity) {
+	public boolean deleteByIdAndUser(int quizId, UserEntity userEntity) {
 		QuizEntity quiz = quizRepository.findById(quizId).orElseThrow(NoSuchElementException::new);
 		if(quiz.getUser().getId() == userEntity.getId()) {
 			quizRepository.deleteById(quizId);
-		} else {
-			throw new NoSuchElementException();
+			return true;
 		}
+		
+		return false;
+		
 	}
 
 }

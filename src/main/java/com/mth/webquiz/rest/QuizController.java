@@ -10,6 +10,7 @@ import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,7 +33,6 @@ import com.mth.webquiz.service.UserService;
 @RequestMapping("/api")
 public class QuizController {
 	private static final String NOT_FOUND_MESSAGE = "Quiz não encontrado";
-	
 	@Autowired
 	QuizService quizService;
 	
@@ -41,16 +41,16 @@ public class QuizController {
 	
 	// Map para GET {id} - Retorna o quiz pedido
 	@GetMapping("/quizzes/{id}")
-	public QuizDTO getQuiz(@PathVariable int id, Authentication auth) {
-		QuizEntity entity = quizService.findByIdAndUser(id, getCurrentUser(auth))
+	public QuizDTO getQuiz(@PathVariable int id) {
+		QuizEntity entity = quizService.findById(id)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, NOT_FOUND_MESSAGE));
 		return new QuizDTO(entity);
 	}
 	
 	// Map para GET /quizzes - Retorna todos os quiz com ID
 	@GetMapping("/quizzes")
-	public List<QuizDTO> getQuizzes(Authentication auth) {
-		List<QuizEntity> quizEntities = quizService.findByUser(getCurrentUser(auth));
+	public List<QuizDTO> getQuizzes() {
+		List<QuizEntity> quizEntities = quizService.findAll();
 		
 		return quizEntities.stream()
 							.map(QuizDTO::new)
@@ -75,8 +75,8 @@ public class QuizController {
 	
 	// Map para POST quiz/id/solve - Recebe a resposta do usuário e retorna se acertou ou não
 	@PostMapping("/quizzes/{quizId}/solve")
-	public AnswerFeedback checkAnswer(@RequestBody AnswersDTO answer, @PathVariable int quizId, Authentication auth) {
-		QuizEntity quiz = quizService.findByIdAndUser(quizId, getCurrentUser(auth))
+	public AnswerFeedback checkAnswer(@RequestBody AnswersDTO answer, @PathVariable int quizId) {
+		QuizEntity quiz = quizService.findById(quizId)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, NOT_FOUND_MESSAGE));
 		
 		QuizDTO quizDTO = new QuizDTO(quiz);
@@ -92,14 +92,18 @@ public class QuizController {
 	@ResponseStatus(HttpStatus.NO_CONTENT)		// Retorna um 204 após deletar
 	public void deleteQuiz(@PathVariable int quizId, Authentication auth) {
 		try {
-			quizService.deleteByIdAndUser(quizId, getCurrentUser(auth));
+			boolean response = quizService.deleteByIdAndUser(quizId, getCurrentUser(auth));
+			if (!response) {
+				throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Comando de deletar negado");
+			}
 		} catch (NoSuchElementException exc) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, NOT_FOUND_MESSAGE);
 		}
 	}
 	
 	private UserEntity getCurrentUser(Authentication auth) {
-		return userService.findByEmail(auth.getName());
+		return userService.findByEmail(auth.getName()).
+				orElseThrow(() -> new UsernameNotFoundException("Email nao encontrado"));
 	}
 	
 	private String invalidFieldErrorMessage(Errors errors) {

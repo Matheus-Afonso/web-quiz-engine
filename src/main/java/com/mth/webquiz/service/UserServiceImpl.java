@@ -23,11 +23,10 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public UserEntity registerUser(UserEntity user) {
 		// Verificação se o email já foi cadastrado
-		Optional<UserEntity> check = userRepository.findById(user.getId());
-		
-		if (check.isPresent()) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email já cadastrado");
-		}
+		userRepository.findByEmail(user.getEmail()).
+						ifPresent(s -> {
+							throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email já cadastrado");
+						});
 		
 		// Cadastro
 		String password = user.getPassword();
@@ -36,7 +35,7 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public UserEntity findByEmail(String email) {
+	public Optional<UserEntity> findByEmail(String email) {
 		return userRepository.findByEmail(email);
 	}
 	

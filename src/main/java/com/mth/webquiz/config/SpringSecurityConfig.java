@@ -24,6 +24,7 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 		http.authorizeRequests()
 		.antMatchers("/h2-console/**").permitAll()
 		.antMatchers("/api/register").permitAll()
+		.antMatchers("/actuator/shutdown").permitAll()
 		.antMatchers("/api/quizzes/**").authenticated()
 		.antMatchers("/**").authenticated()
 		.and().httpBasic()
