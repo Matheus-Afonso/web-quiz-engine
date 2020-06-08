@@ -1,6 +1,7 @@
 package com.mth.webquiz.service;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +45,16 @@ public class QuizServiceImpl implements QuizService {
 	@Override
 	public Optional<QuizEntity> findByIdAndUser(int id, UserEntity user) {
 		return quizRepository.findByIdAndUser(id, user);
+	}
+
+	@Override
+	public void deleteByIdAndUser(int quizId, UserEntity userEntity) {
+		QuizEntity quiz = quizRepository.findById(quizId).orElseThrow(NoSuchElementException::new);
+		if(quiz.getUser().getId() == userEntity.getId()) {
+			quizRepository.deleteById(quizId);
+		} else {
+			throw new NoSuchElementException();
+		}
 	}
 
 }

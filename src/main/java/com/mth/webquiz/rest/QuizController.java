@@ -2,12 +2,12 @@ package com.mth.webquiz.rest;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.Errors;
@@ -31,7 +31,6 @@ import com.mth.webquiz.service.UserService;
 @RestController
 @RequestMapping("/api")
 public class QuizController {
-	
 	private static final String NOT_FOUND_MESSAGE = "Quiz não encontrado";
 	
 	@Autowired
@@ -43,12 +42,6 @@ public class QuizController {
 	// Map para GET {id} - Retorna o quiz pedido
 	@GetMapping("/quizzes/{id}")
 	public QuizDTO getQuiz(@PathVariable int id, Authentication auth) {
-//		List<QuizEntity> quizzes = quizService.findByUser(getCurrentUser(auth));
-//		QuizEntity entity = quizzes.stream()
-//							.filter(quiz -> quiz.getId() == id)
-//							.findFirst()
-//							.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, NOT_FOUND_MESSAGE));
-		
 		QuizEntity entity = quizService.findByIdAndUser(id, getCurrentUser(auth))
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, NOT_FOUND_MESSAGE));
 		return new QuizDTO(entity);
@@ -82,8 +75,8 @@ public class QuizController {
 	
 	// Map para POST quiz/id/solve - Recebe a resposta do usuário e retorna se acertou ou não
 	@PostMapping("/quizzes/{quizId}/solve")
-	public AnswerFeedback checkAnswer(@RequestBody AnswersDTO answer, @PathVariable int quizId) {
-		QuizEntity quiz = quizService.findById(quizId)
+	public AnswerFeedback checkAnswer(@RequestBody AnswersDTO answer, @PathVariable int quizId, Authentication auth) {
+		QuizEntity quiz = quizService.findByIdAndUser(quizId, getCurrentUser(auth))
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, NOT_FOUND_MESSAGE));
 		
 		QuizDTO quizDTO = new QuizDTO(quiz);
@@ -97,10 +90,10 @@ public class QuizController {
 	// Map para DELETE quizzes/id - Deleta o quiz vinculado ao ID
 	@DeleteMapping("/quizzes/{quizId}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)		// Retorna um 204 após deletar
-	public void deleteQuiz(@PathVariable int quizId) {
+	public void deleteQuiz(@PathVariable int quizId, Authentication auth) {
 		try {
-			quizService.deleteById(quizId);
-		} catch (EmptyResultDataAccessException exc) {
+			quizService.deleteByIdAndUser(quizId, getCurrentUser(auth));
+		} catch (NoSuchElementException exc) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, NOT_FOUND_MESSAGE);
 		}
 	}

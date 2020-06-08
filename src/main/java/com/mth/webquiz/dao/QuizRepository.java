@@ -16,4 +16,6 @@ public interface QuizRepository extends JpaRepository<QuizEntity, Integer> {
 	List<QuizEntity> findByUser(UserEntity user);
 	
 	Optional<QuizEntity> findByIdAndUser(int id, UserEntity user);
+
+	void deleteByIdAndUser(int quizId, UserEntity userEntity);
 }

@@ -28,6 +28,9 @@ dependencies {
 	// Adicionado para AOP
 	implementation 'org.springframework.boot:spring-boot-starter-aop'
 	
+	// Adicionado para Validator customizado
+	implementation 'org.hibernate:hibernate-validator:6.1.5.Final'
+	
 	providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
 	testImplementation('org.springframework.boot:spring-boot-starter-test') {
 		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
