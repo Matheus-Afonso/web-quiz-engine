@@ -5,6 +5,10 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.mth.webquiz.dao.QuizRepository;
@@ -23,8 +27,9 @@ public class QuizServiceImpl implements QuizService {
 	}
 
 	@Override
-	public List<QuizEntity> findAll() {
-		return quizRepository.findAll();
+	public Page<QuizEntity> findAll(int page, int pageSize, String sortBy) {
+		Pageable pageable = PageRequest.of(page, pageSize, Sort.by(sortBy));
+		return quizRepository.findAll(pageable);
 	}
 
 	@Override
@@ -42,11 +47,6 @@ public class QuizServiceImpl implements QuizService {
 		return quizRepository.findByUser(user);
 	}
 	
-	@Override
-	public Optional<QuizEntity> findByIdAndUser(int id, UserEntity user) {
-		return quizRepository.findByIdAndUser(id, user);
-	}
-
 	@Override
 	public boolean deleteByIdAndUser(int quizId, UserEntity userEntity) {
 		QuizEntity quiz = quizRepository.findById(quizId).orElseThrow(NoSuchElementException::new);

@@ -3,11 +3,11 @@ package com.mth.webquiz.rest;
 import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
@@ -33,6 +34,8 @@ import com.mth.webquiz.service.UserService;
 @RequestMapping("/api")
 public class QuizController {
 	private static final String NOT_FOUND_MESSAGE = "Quiz não encontrado";
+	private static final String FORBIDDEN_MESSAGE = "Comando de deletar negado";
+	
 	@Autowired
 	QuizService quizService;
 	
@@ -49,12 +52,14 @@ public class QuizController {
 	
 	// Map para GET /quizzes - Retorna todos os quiz com ID
 	@GetMapping("/quizzes")
-	public List<QuizDTO> getQuizzes() {
-		List<QuizEntity> quizEntities = quizService.findAll();
+	public Page<QuizDTO> getQuizzes(
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "10") int pageSize,
+			@RequestParam(defaultValue = "id") String sortBy)
+	{
 		
-		return quizEntities.stream()
-							.map(QuizDTO::new)
-							.collect(Collectors.toList());
+		Page<QuizEntity> quizPage = quizService.findAll(page, pageSize, sortBy);
+		return quizPage.map(QuizDTO::new);
 	}
 	
 	// Map para POST /quizzes - Cria um novo quiz
@@ -87,14 +92,14 @@ public class QuizController {
 		}
 	}
 	
-	// Map para DELETE quizzes/id - Deleta o quiz vinculado ao ID
+	// Map para DELETE quizzes/id - Deleta o quiz vinculado ao ID. Precisa de permissão de usuário
 	@DeleteMapping("/quizzes/{quizId}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)		// Retorna um 204 após deletar
 	public void deleteQuiz(@PathVariable int quizId, Authentication auth) {
 		try {
-			boolean response = quizService.deleteByIdAndUser(quizId, getCurrentUser(auth));
-			if (!response) {
-				throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Comando de deletar negado");
+			boolean permission = quizService.deleteByIdAndUser(quizId, getCurrentUser(auth));
+			if (!permission) {
+				throw new ResponseStatusException(HttpStatus.FORBIDDEN, FORBIDDEN_MESSAGE);
 			}
 		} catch (NoSuchElementException exc) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, NOT_FOUND_MESSAGE);
