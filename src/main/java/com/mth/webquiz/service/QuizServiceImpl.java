@@ -38,11 +38,6 @@ public class QuizServiceImpl implements QuizService {
 	}
 
 	@Override
-	public void deleteById(int id) {
-		quizRepository.deleteById(id);
-	}
-
-	@Override
 	public List<QuizEntity> findByUser(UserEntity user) {
 		return quizRepository.findByUser(user);
 	}

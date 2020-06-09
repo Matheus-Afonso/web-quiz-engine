@@ -1,5 +1,6 @@
 package com.mth.webquiz.rest;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -26,8 +27,10 @@ import org.springframework.web.server.ResponseStatusException;
 import com.mth.webquiz.dto.AnswersDTO;
 import com.mth.webquiz.dto.QuizDTO;
 import com.mth.webquiz.entity.QuizEntity;
+import com.mth.webquiz.entity.SolvedTimeEntity;
 import com.mth.webquiz.entity.UserEntity;
 import com.mth.webquiz.service.QuizService;
+import com.mth.webquiz.service.SolvedTimeService;
 import com.mth.webquiz.service.UserService;
 
 @RestController
@@ -35,12 +38,17 @@ import com.mth.webquiz.service.UserService;
 public class QuizController {
 	private static final String NOT_FOUND_MESSAGE = "Quiz não encontrado";
 	private static final String FORBIDDEN_MESSAGE = "Comando de deletar negado";
+	private static final String CORRECT_ANSWER_MESSAGE = "Parabéns! Você acertou!";
+	private static final String WRONG_ANSWER_MESSAGE = "Resposta errada! Tente novamente.";
 	
 	@Autowired
 	QuizService quizService;
 	
 	@Autowired
 	UserService userService;
+	
+	@Autowired
+	SolvedTimeService timeService;
 	
 	// Map para GET {id} - Retorna o quiz pedido
 	@GetMapping("/quizzes/{id}")
@@ -60,6 +68,16 @@ public class QuizController {
 		
 		Page<QuizEntity> quizPage = quizService.findAll(page, pageSize, sortBy);
 		return quizPage.map(QuizDTO::new);
+	}
+	
+	// Map para GET /api/quizzes/completed
+	@GetMapping("/quizzes/completed")
+	public Page<SolvedTimeEntity> getTimestamps(
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "10") int pageSize,
+			@RequestParam(defaultValue = "primaryId") String sortBy)
+	{
+		return timeService.findAll(page, pageSize, sortBy);
 	}
 	
 	// Map para POST /quizzes - Cria um novo quiz
@@ -86,9 +104,10 @@ public class QuizController {
 		
 		QuizDTO quizDTO = new QuizDTO(quiz);
 		if (equalAnswers(quizDTO, answer)) {
-			return new AnswerFeedback(true, "Parabéns! Você acertou!");
+			timeService.save(new SolvedTimeEntity(quizId, getCurrentTime()));
+			return new AnswerFeedback(true, CORRECT_ANSWER_MESSAGE);
 		} else {
-			return new AnswerFeedback(false, "Resposta errada! Tente novamente.");
+			return new AnswerFeedback(false, WRONG_ANSWER_MESSAGE);
 		}
 	}
 	
@@ -139,5 +158,7 @@ public class QuizController {
 		return false;
 	}
 	
-	
+	private String getCurrentTime() {
+		return LocalDateTime.now().toString();
+	}
 }

@@ -16,8 +16,6 @@ public interface QuizService {
 	
 	void save(QuizEntity theQuiz);
 	
-	void deleteById(int id);
-	
 	List<QuizEntity> findByUser(UserEntity user);
 
 	boolean deleteByIdAndUser(int quizId, UserEntity userEntity);
