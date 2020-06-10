@@ -26,6 +26,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.mth.webquiz.dto.AnswersDTO;
 import com.mth.webquiz.dto.QuizDTO;
+import com.mth.webquiz.dto.SolvedTimeDTO;
 import com.mth.webquiz.entity.QuizEntity;
 import com.mth.webquiz.entity.SolvedTimeEntity;
 import com.mth.webquiz.entity.UserEntity;
@@ -69,15 +70,17 @@ public class QuizController {
 		Page<QuizEntity> quizPage = quizService.findAll(page, pageSize, sortBy);
 		return quizPage.map(QuizDTO::new);
 	}
-	
+
 	// Map para GET /api/quizzes/completed
 	@GetMapping("/quizzes/completed")
-	public Page<SolvedTimeEntity> getTimestamps(
+	public Page<SolvedTimeDTO> getTimestamps(Authentication auth,
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "10") int pageSize,
 			@RequestParam(defaultValue = "primaryId") String sortBy)
 	{
-		return timeService.findAll(page, pageSize, sortBy);
+		Page<SolvedTimeEntity> timestamps = 
+				timeService.findAllbyUser(page, pageSize, sortBy, getCurrentUser(auth));
+		return timestamps.map(SolvedTimeDTO::new);
 	}
 	
 	// Map para POST /quizzes - Cria um novo quiz
@@ -98,13 +101,13 @@ public class QuizController {
 	
 	// Map para POST quiz/id/solve - Recebe a resposta do usuário e retorna se acertou ou não
 	@PostMapping("/quizzes/{quizId}/solve")
-	public AnswerFeedback checkAnswer(@RequestBody AnswersDTO answer, @PathVariable int quizId) {
+	public AnswerFeedback checkAnswer(@RequestBody AnswersDTO answer, @PathVariable int quizId, Authentication auth) {
 		QuizEntity quiz = quizService.findById(quizId)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, NOT_FOUND_MESSAGE));
 		
 		QuizDTO quizDTO = new QuizDTO(quiz);
 		if (equalAnswers(quizDTO, answer)) {
-			timeService.save(new SolvedTimeEntity(quizId, getCurrentTime()));
+			timeService.save(new SolvedTimeEntity(quizId, getCurrentTime(), getCurrentUser(auth)));
 			return new AnswerFeedback(true, CORRECT_ANSWER_MESSAGE);
 		} else {
 			return new AnswerFeedback(false, WRONG_ANSWER_MESSAGE);

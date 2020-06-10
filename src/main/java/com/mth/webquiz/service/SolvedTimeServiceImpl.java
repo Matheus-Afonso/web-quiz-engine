@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.mth.webquiz.dao.SolvedTimeRepository;
 import com.mth.webquiz.entity.SolvedTimeEntity;
+import com.mth.webquiz.entity.UserEntity;
 
 @Service
 public class SolvedTimeServiceImpl implements SolvedTimeService {
@@ -22,9 +23,9 @@ public class SolvedTimeServiceImpl implements SolvedTimeService {
 	}
 
 	@Override
-	public Page<SolvedTimeEntity> findAll(int page, int pageSize, String sortBy) {
+	public Page<SolvedTimeEntity> findAllbyUser(int page, int pageSize, String sortBy, UserEntity user) {
 		Pageable pageable = PageRequest.of(page, pageSize, Sort.by(sortBy).descending());
-		return timeRepository.findAll(pageable);
+		return timeRepository.findAllByUser(user, pageable);
 	}
 
 }

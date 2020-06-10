@@ -24,9 +24,13 @@ public class UserEntity {
 	
 	private String password;
 	
-	// Integração com tabela de quiz
+	// Integração com tabela de quiz. Para ser usada no DELETE
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
 	private List<QuizEntity> quizzes = new ArrayList<>();
+	
+	// Integração com a tabela dos timestamps das resoluções
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+	private List<SolvedTimeEntity> solvedTimes = new ArrayList<>();
 	
 	public UserEntity() {
 		// Vazio
@@ -69,6 +73,14 @@ public class UserEntity {
 
 	public void setQuizzes(List<QuizEntity> quizzes) {
 		this.quizzes = quizzes;
+	}
+	
+	public List<SolvedTimeEntity> getSolvedTimes() {
+		return solvedTimes;
+	}
+
+	public void setSolvedTimes(List<SolvedTimeEntity> solvedTimes) {
+		this.solvedTimes = solvedTimes;
 	}
 
 	@Override

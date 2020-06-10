@@ -1,15 +1,15 @@
 package com.mth.webquiz.entity;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 
 @Entity
-@JsonIgnoreProperties(value = "primaryId")
 public class SolvedTimeEntity {
 	
 	@Id
@@ -22,14 +22,19 @@ public class SolvedTimeEntity {
 	
 	@Column(name = "completed_at")
 	String completedAt;
+	
+	@ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.PERSIST})
+	@JoinColumn(name = "user_id")
+	UserEntity user;
 
 	public SolvedTimeEntity() {
 		// Vazio
 	}
 	
-	public SolvedTimeEntity(int id, String completedAt) {
+	public SolvedTimeEntity(int id, String completedAt, UserEntity user) {
 		this.id = id;
 		this.completedAt = completedAt;
+		this.user = user;
 	}
 
 	public int getPrimaryId() {

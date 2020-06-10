@@ -22,7 +22,7 @@ public class UserDTO {
 		// Vazio
 	}
 	
-	public  UserDTO(UserEntity userEntity) {
+	public UserDTO(UserEntity userEntity) {
 		email = userEntity.getEmail();
 		password = userEntity.getPassword();
 		userEntity.getQuizzes()
