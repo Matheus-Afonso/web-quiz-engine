@@ -1,7 +1,5 @@
 package com.mth.webquiz.config;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,8 +13,6 @@ import com.mth.webquiz.entity.UserEntity;
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
 	
-	private static Logger log = LoggerFactory.getLogger(UserDetailsServiceImpl.class);
-	
 	@Autowired
 	private UserRepository userRepository;
 	
@@ -24,7 +20,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 	public UserDetails loadUserByUsername(String email) {
 		UserEntity user = userRepository.findByEmail(email)
 				.orElseThrow(() -> new UsernameNotFoundException("Email nao encontrado"));
-		log.info(">>>User achado: {}", user);
 		
 		return toUserDetails(user);
 	}

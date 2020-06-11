@@ -4,6 +4,7 @@ package com.mth.webquiz.config;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -23,10 +24,8 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 	protected void configure(HttpSecurity http) throws Exception {
 		http.authorizeRequests()
 		.antMatchers("/h2-console/**").permitAll()
-		.antMatchers("/api/register").permitAll()
-		.antMatchers("/actuator/shutdown").permitAll()
+		.antMatchers(HttpMethod.POST, "/api/register", "/actuator/shutdown").permitAll()
 		.antMatchers("/api/quizzes/**").authenticated()
-		.antMatchers("/**").authenticated()
 		.and().httpBasic()
 		.and().csrf().disable()
 		.headers().frameOptions().disable();	// Para poder acessar o h2 console sem erro x-frame

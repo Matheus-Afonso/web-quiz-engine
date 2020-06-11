@@ -1,6 +1,5 @@
 package com.mth.webquiz.service;
 
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -16,8 +15,6 @@ public interface QuizService {
 	
 	void save(QuizEntity theQuiz);
 	
-	List<QuizEntity> findByUser(UserEntity user);
-
 	boolean deleteByIdAndUser(int quizId, UserEntity userEntity);
 
 }

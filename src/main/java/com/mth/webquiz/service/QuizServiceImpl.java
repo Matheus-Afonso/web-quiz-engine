@@ -1,6 +1,5 @@
 package com.mth.webquiz.service;
 
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -37,11 +36,6 @@ public class QuizServiceImpl implements QuizService {
 		return quizRepository.findById(id);
 	}
 
-	@Override
-	public List<QuizEntity> findByUser(UserEntity user) {
-		return quizRepository.findByUser(user);
-	}
-	
 	@Override
 	public boolean deleteByIdAndUser(int quizId, UserEntity userEntity) {
 		QuizEntity quiz = quizRepository.findById(quizId).orElseThrow(NoSuchElementException::new);
