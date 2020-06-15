@@ -15,6 +15,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -114,7 +115,7 @@ public class QuizController {
 		}
 	}
 	
-	// Map para DELETE quizzes/id - Deleta o quiz vinculado ao ID. Precisa de permissão de usuário
+	// Map para DELETE quizzes/id - Deleta o quiz vinculado ao ID do dono.
 	@DeleteMapping("/quizzes/{quizId}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)		// Retorna um 204 após deletar
 	public void deleteQuiz(@PathVariable int quizId, Authentication auth) {
@@ -126,6 +127,18 @@ public class QuizController {
 		} catch (NoSuchElementException exc) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, NOT_FOUND_MESSAGE);
 		}
+	}
+	
+	// TODO: Map para PUT. Atualiza o quiz vinculado ao ID do dono
+	@PatchMapping("/quizzes/{quizId}")
+	public QuizDTO updateQuiz(@PathVariable int quizId, @RequestBody QuizDTO updatedDTO, Authentication auth) {
+		// Um usuário pode editar o quiz de outro usuário?
+		QuizEntity updatedEntity = new QuizEntity(updatedDTO);
+		updatedEntity.setUser(getCurrentUser(auth));
+		updatedEntity.setId(quizId);
+		quizService.save(updatedEntity);
+		
+		return new QuizDTO(updatedEntity);
 	}
 	
 	private UserEntity getCurrentUser(Authentication auth) {
