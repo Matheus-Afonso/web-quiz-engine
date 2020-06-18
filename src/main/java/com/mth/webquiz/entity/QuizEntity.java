@@ -35,7 +35,7 @@ public class QuizEntity {
 	@OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<QuizAnswers> answer = new ArrayList<>();
 	
-	@ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.PERSIST}, 
+	@ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH}, 
 			fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id")
 	private UserEntity user;
@@ -110,7 +110,7 @@ public class QuizEntity {
 
 	@Override
 	public String toString() {
-		return "Quiz [id=" + id + ", title=" + title + ", text=" + text + ", options=" + options + "]";
+		return "Quiz [id=" + id + ", title=" + title + ", text=" + text + ", options=" + options + "," + user +"]";
 	}
 
 }

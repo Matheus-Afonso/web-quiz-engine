@@ -23,14 +23,15 @@ public class UserController {
 	private UserService userService;
 		
 	@PostMapping("/register")
-	public UserEntity registerUser(@Valid @RequestBody UserDTO user, Errors errors) {
+	public AnswerFeedback registerUser(@Valid @RequestBody UserDTO user, Errors errors) {
 		
 		if (errors.hasErrors()) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, invalidFieldErrorMessage(errors));
 		}
 		
 		UserEntity entity = new UserEntity(user);
-		return userService.registerUser(entity);
+		userService.registerUser(entity);
+		return new AnswerFeedback(true, "Usuário de email " + user.getEmail() + " criado");
 	}
 	
 	private String invalidFieldErrorMessage(Errors errors) {

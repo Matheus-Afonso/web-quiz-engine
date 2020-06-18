@@ -3,8 +3,8 @@ package com.mth.webquiz.dto;
 import com.mth.webquiz.entity.SolvedTimeEntity;
 
 public class SolvedTimeDTO {
-	int id;
-	String completedAt;
+	private int id;
+	private String completedAt;
 	
 	public SolvedTimeDTO() {
 		// Vazio

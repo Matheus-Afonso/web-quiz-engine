@@ -10,8 +10,7 @@ import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,26 +27,23 @@ import org.springframework.web.server.ResponseStatusException;
 import com.mth.webquiz.dto.AnswersDTO;
 import com.mth.webquiz.dto.QuizDTO;
 import com.mth.webquiz.dto.SolvedTimeDTO;
+import com.mth.webquiz.dto.UserDTO;
 import com.mth.webquiz.entity.QuizEntity;
 import com.mth.webquiz.entity.SolvedTimeEntity;
 import com.mth.webquiz.entity.UserEntity;
 import com.mth.webquiz.service.QuizService;
 import com.mth.webquiz.service.SolvedTimeService;
-import com.mth.webquiz.service.UserService;
 
 @RestController
 @RequestMapping("/api")
 public class QuizController {
 	private static final String NOT_FOUND_MESSAGE = "Quiz não encontrado";
-	private static final String FORBIDDEN_MESSAGE = "Comando de deletar negado";
+	private static final String FORBIDDEN_MESSAGE = "Usuário não possui permissão";
 	private static final String CORRECT_ANSWER_MESSAGE = "Parabéns! Você acertou!";
 	private static final String WRONG_ANSWER_MESSAGE = "Resposta errada! Tente novamente.";
 	
 	@Autowired
 	QuizService quizService;
-	
-	@Autowired
-	UserService userService;
 	
 	@Autowired
 	SolvedTimeService timeService;
@@ -64,37 +60,37 @@ public class QuizController {
 	@GetMapping("/quizzes")
 	public Page<QuizDTO> getQuizzes(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "10") int pageSize,
-			@RequestParam(defaultValue = "id") String sortBy)
+			@RequestParam(defaultValue = "10") int size,
+			@RequestParam(defaultValue = "id") String sort)
 	{
 		
-		Page<QuizEntity> quizPage = quizService.findAll(page, pageSize, sortBy);
+		Page<QuizEntity> quizPage = quizService.findAll(page, size, sort);
 		return quizPage.map(QuizDTO::new);
 	}
 
 	// Map para GET /api/quizzes/completed
 	@GetMapping("/quizzes/completed")
-	public Page<SolvedTimeDTO> getTimestamps(Authentication auth,
+	public Page<SolvedTimeDTO> getTimestamps(@AuthenticationPrincipal UserDTO user,
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "10") int pageSize,
-			@RequestParam(defaultValue = "primaryId") String sortBy)
+			@RequestParam(defaultValue = "10") int size,
+			@RequestParam(defaultValue = "primaryId") String sort)
 	{
 		Page<SolvedTimeEntity> timestamps = 
-				timeService.findAllbyUser(page, pageSize, sortBy, getCurrentUser(auth));
+				timeService.findAllbyUser(page, size, sort, new UserEntity(user));
 		return timestamps.map(SolvedTimeDTO::new);
 	}
 	
 	// Map para POST /quizzes - Cria um novo quiz
 	@PostMapping("/quizzes")
-	public QuizDTO createQuiz(@Valid @RequestBody QuizDTO theQuiz, Errors errors, Authentication auth) {
+	public QuizDTO createQuiz(@Valid @RequestBody QuizDTO theQuiz, Errors errors, 
+			@AuthenticationPrincipal UserDTO user) {
 		// Unico metodo de pegar o exception do Validate. ExceptionHandler não funciona
 		if(errors.hasErrors()) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, invalidFieldErrorMessage(errors));
 		}
+
 		QuizEntity quizEntity = new QuizEntity(theQuiz);
-		
-		quizEntity.setId(0);
-		quizEntity.setUser(getCurrentUser(auth));
+		quizEntity.setUser(new UserEntity(user));
 		quizService.save(quizEntity);
 		
 		return new QuizDTO(quizEntity);
@@ -102,13 +98,14 @@ public class QuizController {
 	
 	// Map para POST quiz/id/solve - Recebe a resposta do usuário e retorna se acertou ou não
 	@PostMapping("/quizzes/{quizId}/solve")
-	public AnswerFeedback checkAnswer(@RequestBody AnswersDTO answer, @PathVariable int quizId, Authentication auth) {
+	public AnswerFeedback checkAnswer(@RequestBody AnswersDTO answer, @PathVariable int quizId, 
+			@AuthenticationPrincipal UserDTO user) {
 		QuizEntity quiz = quizService.findById(quizId)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, NOT_FOUND_MESSAGE));
-		
+
 		QuizDTO quizDTO = new QuizDTO(quiz);
 		if (equalAnswers(quizDTO, answer)) {
-			timeService.save(new SolvedTimeEntity(quizId, getCurrentTime(), getCurrentUser(auth)));
+			timeService.save(new SolvedTimeEntity(quizId, getCurrentTime(), new UserEntity(user)));
 			return new AnswerFeedback(true, CORRECT_ANSWER_MESSAGE);
 		} else {
 			return new AnswerFeedback(false, WRONG_ANSWER_MESSAGE);
@@ -118,9 +115,9 @@ public class QuizController {
 	// Map para DELETE quizzes/id - Deleta o quiz vinculado ao ID do dono.
 	@DeleteMapping("/quizzes/{quizId}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)		// Retorna um 204 após deletar
-	public void deleteQuiz(@PathVariable int quizId, Authentication auth) {
+	public void deleteQuiz(@PathVariable int quizId, @AuthenticationPrincipal UserDTO user) {
 		try {
-			boolean permission = quizService.deleteByIdAndUser(quizId, getCurrentUser(auth));
+			boolean permission = quizService.deleteByIdAndUser(quizId, new UserEntity(user));
 			if (!permission) {
 				throw new ResponseStatusException(HttpStatus.FORBIDDEN, FORBIDDEN_MESSAGE);
 			}
@@ -129,21 +126,25 @@ public class QuizController {
 		}
 	}
 	
-	// TODO: Map para PUT. Atualiza o quiz vinculado ao ID do dono
+	// Map para PATCH quizzes/id - Atualiza o quiz vinculado ao ID do dono
 	@PatchMapping("/quizzes/{quizId}")
-	public QuizDTO updateQuiz(@PathVariable int quizId, @RequestBody QuizDTO updatedDTO, Authentication auth) {
-		// Um usuário pode editar o quiz de outro usuário?
+	public QuizDTO updateQuiz(@PathVariable int quizId, @RequestBody QuizDTO updatedDTO, 
+			@AuthenticationPrincipal UserDTO user) {
+		
+		// Checa se o usuário editando é o dono
+		QuizEntity originalQuiz = quizService.findById(quizId)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, NOT_FOUND_MESSAGE));
+		
+		if (originalQuiz.getUser().getId() != user.getId()) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, FORBIDDEN_MESSAGE);
+		}
+		
 		QuizEntity updatedEntity = new QuizEntity(updatedDTO);
-		updatedEntity.setUser(getCurrentUser(auth));
+		updatedEntity.setUser(new UserEntity(user));
 		updatedEntity.setId(quizId);
 		quizService.save(updatedEntity);
 		
 		return new QuizDTO(updatedEntity);
-	}
-	
-	private UserEntity getCurrentUser(Authentication auth) {
-		return userService.findByEmail(auth.getName()).
-				orElseThrow(() -> new UsernameNotFoundException("Email nao encontrado"));
 	}
 	
 	private String invalidFieldErrorMessage(Errors errors) {

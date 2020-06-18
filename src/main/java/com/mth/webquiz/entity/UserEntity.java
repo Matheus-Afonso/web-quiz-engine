@@ -11,6 +11,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 
+
 import com.mth.webquiz.dto.UserDTO;
 
 @Entity(name = "user")
@@ -38,7 +39,7 @@ public class UserEntity {
 	
 	public UserEntity(UserDTO userDTO) {
 		// Só irá acessar quando um novo user for criado
-		id = 0;
+		id = userDTO.getId();
 		email = userDTO.getEmail();
 		password = userDTO.getPassword();
 	}
@@ -87,4 +88,5 @@ public class UserEntity {
 	public String toString() {
 		return "UserEntity [id=" + id + ", email=" + email + ", password=" + password + "]";
 	}
+
 }

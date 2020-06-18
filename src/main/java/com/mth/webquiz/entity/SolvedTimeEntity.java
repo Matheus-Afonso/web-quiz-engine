@@ -24,7 +24,7 @@ public class SolvedTimeEntity {
 	@Column(name = "completed_at")
 	String completedAt;
 	
-	@ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.PERSIST}, 
+	@ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH}, 
 			fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id")
 	UserEntity user;
