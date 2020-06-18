@@ -13,7 +13,9 @@ package com.mth.webquiz;
  * Deletar um quiz
  * Criar um novo usuário via POST em api/register. Usuario e senha(com BCrypt)
  * Todas as operações precisam dos dados do usuário
- * Só pode mostrar os quiz relacionados ao usuário
+ * Só pode deletar o quiz relacionado ao usuário logado
+ * 6 - Mostrar o JSON usando paginação e possibilitando adicionar ?page=num.
+ * Extra - Edição de quiz por meio de @PatchMapping
  * */
 
 import org.springframework.boot.SpringApplication;
