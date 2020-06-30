@@ -4,20 +4,20 @@ ferramentas CRUD para quizzes, receber respostas do usuário para validá-las e 
 
 Feito de acordo com o projeto [Web Quiz Engine](https://hyperskill.org/projects/91) do Hyperskill.
 
-A API foi feita usando a linguagem **Java** e framework **Spring Boot**. Módulos e frameworks usados:
+A API foi feita usando a linguagem **Java** e framework **Spring Boot**. Módulos e frameworks adicionais:
 - **Gradle**.
 - **Spring Security** para cadastro e autenticação de usuário e senha.
 - **Hibernate e Spring Data JPA** para validação de dados e acesso ao banco de dados.
 - **H2 Database** como banco de dados portátil.
 
 ### Dependências
-Dependência | Descrição | Requisições
------------ | --------- | ---------------
-```/api/register``` | Cadastro de usuários | POST
-```/api/quizzes``` | Ver quizzes cadastrados ou criar um novo | GET, POST
-```/api/quizzes/{id}``` | Ver, editar ou deletar um quiz com id específico | GET, PATCH, DELETE
-```/api/quizzes/{id}/solve``` | Recebe a resposta do usuário | POST
-```/api/quizzes/completed``` | Hora e data dos acertos do usuário atual | GET
+Dependência | Descrição | Requisições | Respostas HTTP
+----------- | --------- | ----------- | --------------
+```/api/register``` | Cadastro de usuários | POST | ```200 OK```, ```400 Bad Request```
+```/api/quizzes``` | Ver quizzes cadastrados ou criar um novo | GET, POST | ```200 OK```, ```400 Bad Request```, ```401 Unauthorized```
+```/api/quizzes/{id}``` | Ver ou deletar um quiz com id específico | GET, DELETE | ```200 OK```, ```204 No Content```, ```401 Unauthorized```, ```404 Not Found```, ```405 Forbidden```
+```/api/quizzes/{id}/solve``` | Recebe a resposta do usuário | POST | ```200 OK```, ```401 Unauthorized```, ```404 Not Found``` 
+```/api/quizzes/completed``` | Hora e data dos acertos do usuário atual | GET | ```200 OK```, ```401 Unauthorized```, ```404 Not Found```
 
 ## Instruções
 
@@ -26,7 +26,7 @@ Para subir a API, utilizar o comando para executar projetos Spring Boot no Gradl
 Não é necessária nenhuma configuração adicional da DB já que todas as configurações para a H2 Database já estão feitas em [application.properties](src/main/resources/application.properties).
 
 ### Cadastro de Usuário
-Para usar as funções da API, é necessário um usuário cadastrado, senão qualquer comando feito em /api/quizzes irá receber um ```405 Unauthorized``` como resposta.
+Para usar as funções da API, é necessário um usuário cadastrado, senão qualquer comando feito em /api/quizzes irá receber um ```401 Unauthorized``` como resposta.
 Para o cadastrar um novo usuário:
 
 ```POST /api/register```
@@ -94,3 +94,44 @@ em ordem crescente pelo ID. Alguns exemplos de comandos usando a paginação.
 
 Caso o quiz exista e o usuário atual seja o criador do quiz, a API retornará ```204 No Content```. Caso contrário, poderá retornar ```403 Forbidden``` 
 ou ```404 Not Found```.
+
+### Editar um Quiz
+*Em breve*.
+
+### Responder Quiz
+Ao saber o ID de um quiz, é possível enviar a resposta do usuário para o quiz especificado. Para executar isso é necessário usar:
+
+```POST /api/quizzes/{id}/solve```
+
+Body a ser enviado. No exemplo está enviando que a resposta é a apenas a segunda opção:
+```
+{
+  "answer": [1]
+}
+``` 
+
+Abaixo o formato da resposta para no caso da tentativa ter acertado a opção correta. 
+```
+{
+  "success": true,
+  "feedback": "Parabéns! Você acertou!"
+}
+``` 
+
+## Log de Sucessos
+Quando um usuário acerta a resposta de um quiz, o horário e data do evento são salvos na DB além do ID do quiz resolvido. Para que ver esses dados
+salvos, usar:
+
+```GET /api/quizzes/completed```
+
+Os dados retornados serão no padrão de paginação, logo os dados estarão no parâmetro "content". Exemplo resumido de resposta para a chamada:
+
+```
+{
+  "id": 1,
+  "completedAt": "2020-06-30T14:49:57.289172600"
+}
+```
+
+O parâmetro "id" representa o ID do quiz solucionado e "completedAt" representa a hora e data da solução. O usuário só pode ver estatísticas de suas próprias
+soluções.
