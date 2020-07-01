@@ -1,8 +1,10 @@
 package com.mth.webquiz.rest;
 
+import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 import javax.validation.Valid;
@@ -11,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.util.ReflectionUtils;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -41,6 +44,7 @@ public class QuizController {
 	private static final String FORBIDDEN_MESSAGE = "Usuário não possui permissão";
 	private static final String CORRECT_ANSWER_MESSAGE = "Parabéns! Você acertou!";
 	private static final String WRONG_ANSWER_MESSAGE = "Resposta errada! Tente novamente.";
+	private static final String BAD_REQUEST_MESSAGE = "Parâmetros inválidos";
 	
 	@Autowired
 	QuizService quizService;
@@ -128,23 +132,37 @@ public class QuizController {
 	
 	// Map para PATCH quizzes/id - Atualiza o quiz vinculado ao ID do dono
 	@PatchMapping("/quizzes/{quizId}")
-	public QuizDTO updateQuiz(@PathVariable int quizId, @RequestBody QuizDTO updatedDTO, 
+	public QuizDTO updateQuiz(@PathVariable int quizId, @RequestBody Map<String, Object> fields, 
 			@AuthenticationPrincipal UserDTO user) {
+		// Checagem dos parâmetros passados no Map
+		if (!isFieldValid(fields)) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, BAD_REQUEST_MESSAGE);
+		}
 		
-		// Checa se o usuário editando é o dono
-		QuizEntity originalQuiz = quizService.findById(quizId)
+		// Checa se existe e se o usuário editando é o dono
+		QuizEntity entity = quizService.findById(quizId)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, NOT_FOUND_MESSAGE));
 		
-		if (originalQuiz.getUser().getId() != user.getId()) {
+		if (entity.getUser().getId() != user.getId()) {
 			throw new ResponseStatusException(HttpStatus.FORBIDDEN, FORBIDDEN_MESSAGE);
 		}
 		
-		QuizEntity updatedEntity = new QuizEntity(updatedDTO);
+		// Caso tenha passado um campo "id" no body, deletá-lo já que isso não será mudado
+		fields.remove("id");
+		
+		QuizDTO updatedDto = new QuizDTO(entity);
+		fields.forEach((k, v) -> {
+			// Usando reflection para pegar o parâmetro de nome "v" no DTO e salvar o valor "k" nele
+			Field field = ReflectionUtils.findField(QuizDTO.class, k);
+			field.setAccessible(true);
+			ReflectionUtils.setField(field, updatedDto, v);
+		});
+		
+		QuizEntity updatedEntity = new QuizEntity(updatedDto);
 		updatedEntity.setUser(new UserEntity(user));
-		updatedEntity.setId(quizId);
 		quizService.save(updatedEntity);
 		
-		return new QuizDTO(updatedEntity);
+		return updatedDto;
 	}
 	
 	private String invalidFieldErrorMessage(Errors errors) {
@@ -177,5 +195,23 @@ public class QuizController {
 	
 	private String getCurrentTime() {
 		return LocalDateTime.now().toString();
+	}
+	
+	private boolean isFieldValid(Map<String, Object> fields) {
+		if (fields == null || fields.isEmpty()) {
+			return false;
+		}
+		
+		for (Object value: fields.values()) {
+			if (value instanceof String) {
+				if(((String) value).isEmpty()) {
+					return false;
+				}
+			} else if (value instanceof List<?> && ((List<?>) value).size() < 2) {
+				return false;
+			}
+		}
+		
+		return true;
 	}
 }

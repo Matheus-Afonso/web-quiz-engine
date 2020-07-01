@@ -45,6 +45,7 @@ public class QuizEntity {
 	}
 	
 	public QuizEntity(QuizDTO quizDTO) {
+		this.id = quizDTO.getId();
 		this.title = quizDTO.getTitle();
 		this.text = quizDTO.getText();
 		// Adiciona as opções em QuizOptions e vice-versa
@@ -107,7 +108,7 @@ public class QuizEntity {
 	public void setUser(UserEntity user) {
 		this.user = user;
 	}
-
+	
 	@Override
 	public String toString() {
 		return "Quiz [id=" + id + ", title=" + title + ", text=" + text + ", options=" + options + "," + user +"]";

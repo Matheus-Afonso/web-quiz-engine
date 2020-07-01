@@ -7,11 +7,15 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty.Access;
 import com.mth.webquiz.entity.QuizEntity;
 
 // Classe responsável por receber o JSON
 @JsonIgnoreProperties(value = "answer", allowSetters = true)
 public class QuizDTO {
+	
+	@JsonProperty(access = Access.READ_ONLY)
 	private int id;
 	
 	@NotBlank

@@ -15,7 +15,7 @@ Dependência | Descrição | Requisições | Respostas HTTP
 ----------- | --------- | ----------- | --------------
 ```/api/register``` | Cadastro de usuários | POST | ```200 OK```, ```400 Bad Request```
 ```/api/quizzes``` | Ver quizzes cadastrados ou criar um novo | GET, POST | ```200 OK```, ```400 Bad Request```, ```401 Unauthorized```
-```/api/quizzes/{id}``` | Ver ou deletar um quiz com id específico | GET, DELETE | ```200 OK```, ```204 No Content```, ```401 Unauthorized```, ```404 Not Found```, ```405 Forbidden```
+```/api/quizzes/{id}``` | Ver, editar ou deletar um quiz com id específico | GET, PATCH, DELETE | ```200 OK```, ```204 No Content```, ```400 Bad Request```, ```401 Unauthorized```, ```404 Not Found```, ```405 Forbidden```
 ```/api/quizzes/{id}/solve``` | Recebe a resposta do usuário | POST | ```200 OK```, ```401 Unauthorized```, ```404 Not Found``` 
 ```/api/quizzes/completed``` | Hora e data dos acertos do usuário atual | GET | ```200 OK```, ```401 Unauthorized```, ```404 Not Found```
 
@@ -23,7 +23,7 @@ Dependência | Descrição | Requisições | Respostas HTTP
 
 ### Compilação
 Para subir a API, utilizar o comando para executar projetos Spring Boot no Gradle. Windows: ```gradlew bootRun```, Linux: ```./gradlew bootRun```. 
-Não é necessária nenhuma configuração adicional da DB já que todas as configurações para a H2 Database já estão feitas em [application.properties](src/main/resources/application.properties).
+Não é necessária nenhuma configuração adicional da DB já que todas as configurações para a H2 Database já estão feitas em [application.properties](https://github.com/Matheus-Afonso/web-quiz-engine/blob/11efe9d40862e7028d1249af05510bf78f19b584/src/main/resources/application.properties#L11).
 
 ### Cadastro de Usuário
 Para usar as funções da API, é necessário um usuário cadastrado, senão qualquer comando feito em /api/quizzes irá receber um ```401 Unauthorized``` como resposta.
@@ -46,7 +46,7 @@ password | String | Senha para login. **Tamanho mínimo de 5 caracteres**
 
 Se estiver tudo certo, retornará ```200 OK```, caso contrário, retornará ```400 Bad Request``` com o erro descrito no parâmetro message.
 Ao ter um usuário cadastrado, é necessário usar as informações de login para todas as requisições em api/quizzes. 
-Não é possível ver, editar ou deletar usuários pela API. Para essas tarefas acessar o /h2-console e logar com o usuário e senha salvos em [application.properties](src/main/resources/application.properties).
+Não é possível ver, editar ou deletar usuários pela API. Para essas tarefas acessar o /h2-console e logar com o usuário e senha salvos em [application.properties](https://github.com/Matheus-Afonso/web-quiz-engine/blob/11efe9d40862e7028d1249af05510bf78f19b584/src/main/resources/application.properties#L11).
 
 ### Cadastrar Quiz
 ```POST /api/quizzes``` 
@@ -96,7 +96,22 @@ Caso o quiz exista e o usuário atual seja o criador do quiz, a API retornará `
 ou ```404 Not Found```.
 
 ### Editar um Quiz
-*Em breve*.
+**Apenas o usuário que criou o quiz em específico pode editá-lo**. 
+É possível enviar apenas os dados que serão mudados para a API na edição do Quiz. Para isso, usar:
+
+```PATCH /api/quizzes/{id}```
+
+Nesse exemplo de body abaixo, apenas os campos "text" e "options" devem ser atualizados.
+```
+{
+  "text": "Nova descricao",
+  "options": ["Opcao 1", "Opcao 2", "Opcao 3"]
+}
+```
+
+Caso o quiz exista e o usuário atual seja o criador do quiz, a API retornará o quiz com os dados atualizados, seguindo o padrão de não mostrar
+o parâmetro "answer". Caso contrário, poderá retornar ```403 Forbidden``` ou ```404 Not Found```. Caso haja uma tentativa de atualizar um parâmetro
+com um valor inválido, retornará ```400 Bad Request```.
 
 ### Responder Quiz
 Ao saber o ID de um quiz, é possível enviar a resposta do usuário para o quiz especificado. Para executar isso é necessário usar:
