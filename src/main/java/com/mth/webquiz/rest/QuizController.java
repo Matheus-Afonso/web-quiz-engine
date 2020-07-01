@@ -102,7 +102,7 @@ public class QuizController {
 	
 	// Map para POST quiz/id/solve - Recebe a resposta do usuário e retorna se acertou ou não
 	@PostMapping("/quizzes/{quizId}/solve")
-	public AnswerFeedback checkAnswer(@RequestBody AnswersDTO answer, @PathVariable int quizId, 
+	public Map<String, Object> checkAnswer(@RequestBody AnswersDTO answer, @PathVariable int quizId, 
 			@AuthenticationPrincipal UserDTO user) {
 		QuizEntity quiz = quizService.findById(quizId)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, NOT_FOUND_MESSAGE));
@@ -110,9 +110,11 @@ public class QuizController {
 		QuizDTO quizDTO = new QuizDTO(quiz);
 		if (equalAnswers(quizDTO, answer)) {
 			timeService.save(new SolvedTimeEntity(quizId, getCurrentTime(), new UserEntity(user)));
-			return new AnswerFeedback(true, CORRECT_ANSWER_MESSAGE);
+			return Map.of("success", true, 
+					"feedback", CORRECT_ANSWER_MESSAGE);
 		} else {
-			return new AnswerFeedback(false, WRONG_ANSWER_MESSAGE);
+			return Map.of("success", false, 
+					"feedback", WRONG_ANSWER_MESSAGE);
 		}
 	}
 	

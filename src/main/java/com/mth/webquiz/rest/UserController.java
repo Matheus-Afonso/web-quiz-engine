@@ -1,5 +1,7 @@
 package com.mth.webquiz.rest;
 
+import java.util.Map;
+
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +25,7 @@ public class UserController {
 	private UserService userService;
 		
 	@PostMapping("/register")
-	public AnswerFeedback registerUser(@Valid @RequestBody UserDTO user, Errors errors) {
+	public Map<String, Object> registerUser(@Valid @RequestBody UserDTO user, Errors errors) {
 		
 		if (errors.hasErrors()) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, invalidFieldErrorMessage(errors));
@@ -31,7 +33,8 @@ public class UserController {
 		
 		UserEntity entity = new UserEntity(user);
 		userService.registerUser(entity);
-		return new AnswerFeedback(true, "Usuário de email " + user.getEmail() + " criado");
+		return Map.of("success", true,
+					"feedback", "Usuário de email " + user.getEmail() + " criado");
 	}
 	
 	private String invalidFieldErrorMessage(Errors errors) {
