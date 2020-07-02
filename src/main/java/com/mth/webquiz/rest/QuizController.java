@@ -153,12 +153,18 @@ public class QuizController {
 		fields.remove("id");
 		
 		QuizDTO updatedDto = new QuizDTO(entity);
-		fields.forEach((k, v) -> {
-			// Usando reflection para pegar o parâmetro de nome "v" no DTO e salvar o valor "k" nele
-			Field field = ReflectionUtils.findField(QuizDTO.class, k);
-			field.setAccessible(true);
-			ReflectionUtils.setField(field, updatedDto, v);
-		});
+		
+		try {
+			fields.forEach((k, v) -> {
+				// Usando reflection para pegar o parâmetro de nome "v" no DTO e salvar o valor "k" nele
+				Field field = ReflectionUtils.findField(QuizDTO.class, k);
+				field.setAccessible(true);
+				ReflectionUtils.setField(field, updatedDto, v);
+			});
+		// Filtrar campos. Para o caso de passar um tipo inválido en um campo
+		} catch (IllegalArgumentException e) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, BAD_REQUEST_MESSAGE);
+		}
 		
 		QuizEntity updatedEntity = new QuizEntity(updatedDto);
 		updatedEntity.setUser(new UserEntity(user));
@@ -179,8 +185,8 @@ public class QuizController {
 	private boolean equalAnswers(QuizDTO quizDTO, AnswersDTO answer) {
 		List<Integer> correctOpts = quizDTO.getAnswer();
 		List<Integer> answeredOpts = answer.getAnswer();
+
 		// Caso não possua respostas certas
-		
 		if(correctOpts == null) {
 			return answeredOpts.isEmpty();
 		}
