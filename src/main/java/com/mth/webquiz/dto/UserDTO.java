@@ -14,15 +14,20 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.mth.webquiz.entity.UserEntity;
 import com.mth.webquiz.validator.EmailConstraint;
 
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
+
 @JsonIgnoreProperties(value = "password", allowSetters = true)
+
+@Data
+@NoArgsConstructor
 public class UserDTO implements UserDetails {
 	
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 
 	@JsonIgnore
+	@ToString.Exclude
 	private int id;
 	
 	@EmailConstraint
@@ -31,39 +36,10 @@ public class UserDTO implements UserDetails {
 	@Size(min = 5, max = 100)
 	private String password;
 	
-	public UserDTO() {
-		// Vazio
-	}
-	
 	public UserDTO(UserEntity userEntity) {
 		id = userEntity.getId();
 		email = userEntity.getEmail();
 		password = userEntity.getPassword();
-	}
-	
-	public int getId() {
-		return id;
-	}
-
-	public void setId(int id) {
-		this.id = id;
-	}
-
-	public String getEmail() {
-		return email;
-	}
-
-	public void setEmail(String email) {
-		this.email = email;
-	}
-
-	@Override
-	public String getPassword() {
-		return password;
-	}
-
-	public void setPassword(String password) {
-		this.password = password;
 	}
 	
 	@Override
@@ -71,7 +47,7 @@ public class UserDTO implements UserDetails {
 		return "UserEntity [email=" + email + ", password=" + password + "]";
 	}
 	
-	// Para Spring Security
+	// Tudo abaixo é para Spring Security
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
 		return Collections.singleton(new SimpleGrantedAuthority("USER"));

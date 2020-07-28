@@ -11,8 +11,15 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 @Entity
 @Table(name = "quiz_answers")
+
+@Getter @Setter
+@NoArgsConstructor
 public class QuizAnswers {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,36 +33,8 @@ public class QuizAnswers {
 	@JoinColumn(name = "quiz_id")
 	private QuizEntity quiz;
 	
-	public QuizAnswers() {
-		// Vazio
-	}
-
 	public QuizAnswers(int answerOpt) {
 		this.answerOpt = answerOpt;
-	}
-
-	public int getId() {
-		return id;
-	}
-
-	public void setId(int id) {
-		this.id = id;
-	}
-
-	public int getAnswerOpt() {
-		return answerOpt;
-	}
-
-	public void setAnswerOpt(int answerOpt) {
-		this.answerOpt = answerOpt;
-	}
-	
-	public QuizEntity getQuiz() {
-		return quiz;
-	}
-
-	public void setQuiz(QuizEntity quiz) {
-		this.quiz = quiz;
 	}
 
 	@Override

@@ -13,9 +13,18 @@ import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+
 @Entity
 @Table(name = "quiz_options")
 @JsonIgnoreProperties(value = {"quiz", "id"})
+
+@Getter	@Setter
+@NoArgsConstructor
+@ToString
 public class QuizOptions {
 
 	@Id
@@ -28,42 +37,10 @@ public class QuizOptions {
 	@ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.PERSIST},
 			fetch = FetchType.LAZY)
 	@JoinColumn(name = "quiz_id")
+	@ToString.Exclude 
 	private QuizEntity quiz;
-	
-	public QuizOptions() {
-		// Vazio
-	}
 	
 	public QuizOptions(String option) {
 		this.option = option;
-	}
-
-	public int getId() {
-		return id;
-	}
-
-	public void setId(int id) {
-		this.id = id;
-	}
-
-	public String getOption() {
-		return option;
-	}
-
-	public void setOption(String option) {
-		this.option = option;
-	}
-
-	public QuizEntity getQuiz() {
-		return quiz;
-	}
-
-	public void setQuiz(QuizEntity quiz) {
-		this.quiz = quiz;
-	}
-
-	@Override
-	public String toString() {
-		return "QuizOptions [id=" + id + ", option=" + option;
 	}
 }

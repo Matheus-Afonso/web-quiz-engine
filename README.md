@@ -6,6 +6,7 @@ Feito de acordo com o projeto [Web Quiz Engine](https://hyperskill.org/projects/
 
 A API foi feita usando a linguagem **Java** e framework **Spring Boot**. Módulos e frameworks adicionais:
 - **Gradle**.
+- **Lombok**.
 - **Spring Security** para cadastro e autenticação de usuário e senha.
 - **Hibernate e Spring Data JPA** para validação de dados e acesso ao banco de dados.
 - **H2 Database** como banco de dados portátil.

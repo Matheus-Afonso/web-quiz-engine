@@ -16,8 +16,17 @@ import javax.persistence.OneToMany;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.mth.webquiz.dto.QuizDTO;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+
 @Entity(name = "quiz")
 @JsonIgnoreProperties(value = "answer", allowSetters = true)
+
+@Getter @Setter
+@NoArgsConstructor
+@ToString
 public class QuizEntity {
 	
 	@Id
@@ -28,7 +37,6 @@ public class QuizEntity {
 	
 	private String text;
 	
-	// Se deletar a pergunta, tudo relacionado a ela é deletado
 	@OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<QuizOptions> options = new ArrayList<>();
 	
@@ -39,10 +47,6 @@ public class QuizEntity {
 			fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id")
 	private UserEntity user;
-	
-	public QuizEntity() {
-		// Vazio para DB
-	}
 	
 	public QuizEntity(QuizDTO quizDTO) {
 		this.id = quizDTO.getId();
@@ -60,58 +64,4 @@ public class QuizEntity {
 			answer.forEach(answerOpt -> answerOpt.setQuiz(this));
 		}
 	}
-
-	public int getId() {
-		return id;
-	}
-
-	public void setId(int id) {
-		this.id = id;
-	}
-
-	public String getTitle() {
-		return title;
-	}
-
-	public void setTitle(String title) {
-		this.title = title;
-	}
-
-	public String getText() {
-		return text;
-	}
-
-	public void setText(String text) {
-		this.text = text;
-	}
-
-	public List<QuizOptions> getOptions() {
-		return options;
-	}
-
-	public void setOptions(List<QuizOptions> options) {
-		this.options = options;
-	}
-	
-	public List<QuizAnswers> getAnswer() {
-		return answer;
-	}
-
-	public void setAnswer(List<QuizAnswers> answer) {
-		this.answer = answer;
-	}
-	
-	public UserEntity getUser() {
-		return user;
-	}
-
-	public void setUser(UserEntity user) {
-		this.user = user;
-	}
-	
-	@Override
-	public String toString() {
-		return "Quiz [id=" + id + ", title=" + title + ", text=" + text + ", options=" + options + "," + user +"]";
-	}
-
 }

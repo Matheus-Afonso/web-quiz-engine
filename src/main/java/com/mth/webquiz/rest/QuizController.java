@@ -88,11 +88,10 @@ public class QuizController {
 	@PostMapping("/quizzes")
 	public QuizDTO createQuiz(@Valid @RequestBody QuizDTO theQuiz, Errors errors, 
 			@AuthenticationPrincipal UserDTO user) {
-		// Unico metodo de pegar o exception do Validate. ExceptionHandler não funciona
+
 		if(errors.hasErrors()) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, invalidFieldErrorMessage(errors));
 		}
-
 		QuizEntity quizEntity = new QuizEntity(theQuiz);
 		quizEntity.setUser(new UserEntity(user));
 		quizService.save(quizEntity);
