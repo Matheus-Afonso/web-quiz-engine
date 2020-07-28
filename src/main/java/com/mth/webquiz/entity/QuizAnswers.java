@@ -14,12 +14,14 @@ import javax.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @Entity
 @Table(name = "quiz_answers")
 
 @Getter @Setter
 @NoArgsConstructor
+@ToString
 public class QuizAnswers {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,14 +33,10 @@ public class QuizAnswers {
 	@ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.PERSIST},
 			fetch = FetchType.LAZY)
 	@JoinColumn(name = "quiz_id")
+	@ToString.Exclude
 	private QuizEntity quiz;
 	
 	public QuizAnswers(int answerOpt) {
 		this.answerOpt = answerOpt;
-	}
-
-	@Override
-	public String toString() {
-		return "QuizAnswers [id=" + id + ", answerOpt=" + answerOpt + "]";
 	}
 }

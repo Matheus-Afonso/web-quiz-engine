@@ -44,11 +44,6 @@ public class UserDTO implements UserDetails {
 		password = userEntity.getPassword();
 	}
 	
-	@Override
-	public String toString() {
-		return "UserEntity [email=" + email + ", password=" + password + "]";
-	}
-	
 	// Tudo abaixo é para Spring Security
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
