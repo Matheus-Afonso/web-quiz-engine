@@ -7,6 +7,11 @@ public class EmailValidator implements ConstraintValidator<EmailConstraint, Stri
 
 	@Override
 	public boolean isValid(String value, ConstraintValidatorContext context) {
+		
+		if (value == null) {
+			return false;
+		}
+		
 		// Checa se segue o exemplo "email@site.com(.br opcional)"
 		return value.matches(".+@\\w+\\.\\w+(\\.\\w+)?");
 	}

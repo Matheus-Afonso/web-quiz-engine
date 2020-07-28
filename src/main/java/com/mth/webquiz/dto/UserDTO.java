@@ -3,6 +3,7 @@ package com.mth.webquiz.dto;
 import java.util.Collection;
 import java.util.Collections;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
 import org.springframework.security.core.GrantedAuthority;
@@ -33,6 +34,7 @@ public class UserDTO implements UserDetails {
 	@EmailConstraint
 	private String email;
 	
+	@NotBlank
 	@Size(min = 5, max = 100)
 	private String password;
 	
