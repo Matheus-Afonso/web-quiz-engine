@@ -19,6 +19,7 @@ Dependência | Descrição | Requisições | Respostas HTTP
 ```/api/quizzes/{id}``` | Ver, editar ou deletar um quiz com id específico | GET, PATCH, DELETE | ```200 OK```, ```204 No Content```, ```400 Bad Request```, ```401 Unauthorized```, ```404 Not Found```, ```405 Forbidden```
 ```/api/quizzes/{id}/solve``` | Recebe a resposta do usuário | POST | ```200 OK```, ```401 Unauthorized```, ```404 Not Found``` 
 ```/api/quizzes/completed``` | Hora e data dos acertos do usuário atual | GET | ```200 OK```, ```401 Unauthorized```, ```404 Not Found```
+```/api/quizzes/myquizzes``` | Ver quizzes cadastrados pelo usuário atual | GET | ```200 OK```, ```401 Unauthorized```
 
 ## Instruções
 
@@ -27,7 +28,8 @@ Para subir a API, utilizar o comando para executar projetos Spring Boot no Gradl
 Não é necessária nenhuma configuração adicional da DB já que todas as configurações para a H2 Database já estão feitas em [application.properties](https://github.com/Matheus-Afonso/web-quiz-engine/blob/11efe9d40862e7028d1249af05510bf78f19b584/src/main/resources/application.properties#L11).
 
 ### Cadastro de Usuário
-Para usar as funções da API, é necessário um usuário cadastrado, senão qualquer comando feito em /api/quizzes irá receber um ```401 Unauthorized``` como resposta.
+Para cada ação, a API necessita receber os dados de usuário (e-mail) e senha no cabeçalho da requisição, senão qualquer comando feito em /api/quizzes irá receber um ```401 Unauthorized``` como resposta.
+
 Para o cadastrar um novo usuário:
 
 ```POST /api/register```
@@ -66,7 +68,7 @@ Parâmetro | Tipo | Descrição
 title | String | Título do quiz. **Obrigatório**
 text | String | Enunciado do quiz. **Obrigatório**
 options | List | Opções disponíveis. **No mínimo 2 elementos**
-answer | List | Número(s) da opção(ões) correta(s) considerando que a primeira opção seja 0. **Opcional**, logo podem existir quizzes sem resposta certa
+answer | List | Número(s) da opção(ões) correta(s) considerando que a primeira opção seja 0. **Opcional**, logo é possível criar quizzes sem resposta certa
 
 Se estiver tudo certo, retornará ```200 OK``` com um body indicando os dados do quiz que foram passados (sem o parâmetro "answer") e o id atribuído a ele. Caso ocorra um erro,
 retornará ```400 Bad Request``` com o erro descrito no parâmetro message.
@@ -87,6 +89,32 @@ Isso retornará um body com todos os quizzes no parâmetro "content" por estar e
 em ordem crescente pelo ID. Alguns exemplos de comandos usando a paginação.
 - ```GET /api/quizzes?size=2&page=3``` - Limita 2 itens por página e retorna a terceira página.
 - ```GET /api/quizzes?sort=title``` - Organiza por título em ordem crescente.
+
+Fragmento da resposta em paginação:
+
+```
+"content": [
+        {
+          "id": 1,
+          "title": "The Java Logo",
+          "text": "What is depicted on the Java logo?",
+          "options": [
+              "Robot",
+              "Tea Leaf",
+              "Cup of Coffee",
+              "Bug"
+          ]
+        },
+       ...
+```
+
+### Ver Quizzes do Usuário
+
+Para ver os quizzes que foram cadastrados pelo usuário atual, usar:
+
+```GET /api/quizzes/myquizzes```
+
+O retorno da informação será semelhante ao ```GET /api/quizzes```, ou seja, com os quizzes desejados localizados no parâmetro "content" pela resposta no body estar em modo de paginação.
 
 ### Deletar Quiz
 **Apenas o usuário que criou o quiz em específico pode deletá-lo**. Para deletar um quiz pelo seu ID, usar:
