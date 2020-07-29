@@ -10,10 +10,10 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 
 @SpringBootApplication
 @EnableAspectJAutoProxy
-public class HyperskillWebquizApplication {
+public class WebquizApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(HyperskillWebquizApplication.class, args);
+		SpringApplication.run(WebquizApplication.class, args);
 	}
 
 }
