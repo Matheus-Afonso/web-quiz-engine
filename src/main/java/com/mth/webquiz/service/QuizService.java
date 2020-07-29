@@ -17,4 +17,6 @@ public interface QuizService {
 	
 	boolean deleteByIdAndUser(int quizId, UserEntity userEntity);
 
+	Page<QuizEntity> findAllByUser(int page, int pageSize, String sortBy, UserEntity userEntity);
+
 }

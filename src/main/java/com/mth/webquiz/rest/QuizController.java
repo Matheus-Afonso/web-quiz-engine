@@ -171,6 +171,17 @@ public class QuizController {
 		
 		return updatedDto;
 	}
+
+	//Mapa para GET quizzes/myquizzes - Mostra todos os quizzes vinculados ao ID do dono
+	@GetMapping("/quizzes/myquizzes")
+	public Page<QuizDTO> getUserQuizzes(@AuthenticationPrincipal UserDTO userDTO, 
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "10") int size,
+			@RequestParam(defaultValue = "id") String sort ) {
+		
+		Page<QuizEntity> userQuizzes = quizService.findAllByUser(page, size, sort, new UserEntity(userDTO));
+		return userQuizzes.map(QuizDTO::new);
+	}
 	
 	private String invalidFieldErrorMessage(Errors errors) {
 		StringBuilder msg = new StringBuilder();

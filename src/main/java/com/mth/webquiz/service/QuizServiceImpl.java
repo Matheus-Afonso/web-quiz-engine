@@ -43,9 +43,13 @@ public class QuizServiceImpl implements QuizService {
 			quizRepository.deleteById(quizId);
 			return true;
 		}
-		
 		return false;
-		
+	}
+	
+	@Override
+	public Page<QuizEntity> findAllByUser(int page, int pageSize, String sortBy, UserEntity userEntity) {
+		Pageable pageable = PageRequest.of(page, pageSize, Sort.by(sortBy));
+		return quizRepository.findAllByUser(pageable, userEntity);
 	}
 
 }
