@@ -216,20 +216,24 @@ public class QuizController {
 	}
 	
 	private boolean isFieldValid(Map<String, Object> fields) {
+		final String optionsField = "option";
 		if (fields == null || fields.isEmpty()) {
 			return false;
 		}
 		
+		// Verificar os campos title e text. Opcionais
 		for (Object value: fields.values()) {
-			if (value instanceof String) {
-				if(((String) value).isEmpty()) {
-					return false;
-				}
-			} else if (value instanceof List<?> && ((List<?>) value).size() < 2) {
+			if (value instanceof String && ((String) value).isEmpty()) {
 				return false;
 			}
 		}
 		
-		return true;
+		// Verificar campo options. Opcional
+		if (fields.get(optionsField) == null) {
+			return true;
+		}
+		
+		return (fields.get(optionsField) instanceof List) &&
+				((List<?>) fields.get(optionsField)).size() > 1;
 	}
 }
