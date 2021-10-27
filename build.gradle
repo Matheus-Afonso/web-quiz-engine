@@ -31,6 +31,10 @@ dependencies {
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
 	
+	// Junit
+	testImplementation group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: '2.5.6'
+	implementation 'org.junit.platform:junit-platform-commons:1.8.1'
+			
 	providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
 	testImplementation('org.springframework.boot:spring-boot-starter-test') {
 		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
